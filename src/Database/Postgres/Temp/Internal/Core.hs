@@ -25,7 +25,9 @@ import           System.IO.Unsafe (unsafePerformIO)
 import           System.Posix.Signals (sigINT, sigQUIT, signalProcess)
 import           System.Process
 import           System.Process.Internals
+import qualified System.Process.Typed as ProcessTyped
 import           System.Timeout
+import           Data.String (fromString)
 
 -- | Internal events for debugging
 --
@@ -348,7 +350,7 @@ executeCopyDirectoryCommand CompleteCopyDirectoryCommand {..} = do
     cpFlags = if copyDirectoryCommandCow then "cp -R --reflink=auto " else "cp -R "
 #endif
     copyCommand = cpFlags <> copyDirectoryCommandSrc <> "/* " <> copyDirectoryCommandDst
-  throwIfNotSuccess (CopyCachedInitDbFailed copyCommand) =<< system copyCommand
+  throwIfNotSuccess (CopyCachedInitDbFailed copyCommand) =<< ProcessTyped.runProcess (fromString copyCommand)
 
 -- | Call @createdb@ and tee the output to return if there is an
 --   an exception. Throws 'CreateDbFailed'.
